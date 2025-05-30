@@ -8,5 +8,5 @@ import java.util.concurrent.TimeoutException;
 
 public interface UserRegistrationService {
 
-    UserRegisterResponse registerUser(UserRegisterRequest userRegisterRequest) throws ExecutionException, InterruptedException, TimeoutException;
+    UserRegisterResponse registerUser(UserRegisterRequest userRegisterRequest) ;
 }

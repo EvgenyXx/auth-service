@@ -16,9 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +32,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
 
     @Override
     @Transactional
-    public UserRegisterResponse registerUser(UserRegisterRequest userRegisterRequest) throws ExecutionException, InterruptedException, TimeoutException {
+    public UserRegisterResponse registerUser(UserRegisterRequest userRegisterRequest) {
         userValidationService.checkEmailUniqueness(userRegisterRequest.getEmail());
         userValidationService.checkPhoneNumberUniqueness(userRegisterRequest.getNumberPhone());
         User user = userMapper.toRegisterEntity(userRegisterRequest);
@@ -61,8 +59,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         return jwtService.generateRefreshToken(userId);
     }
 
-    private void sendUserRegistrationEvent(User user) throws ExecutionException,
-            InterruptedException, TimeoutException {
+    private void sendUserRegistrationEvent(User user)  {
         UserRegistrationNotification event = UserRegistrationNotification.newBuilder()
                 .setUserId(user.getId().toString())
                 .setRegistrationDate(user.getCreatedAt().toString())
@@ -70,8 +67,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
                 .setFirstname(user.getFirstname())
                 .setNumberPhone(user.getNumberPhone())
                 .build();
-        kafkaTemplate.send("user-registration-topic", event)
-                .get(5, TimeUnit.SECONDS);
+        kafkaTemplate.send("user-registration-topic", event);
         log.info("Отправлен топик: {}", event);
 
     }
