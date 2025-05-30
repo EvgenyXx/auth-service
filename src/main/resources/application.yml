@@ -1,0 +1,32 @@
+server:
+  port: 8082
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+  datasource:
+    username: root
+    url: jdbc:postgresql://localhost:5432/auth_service_db
+    password: admin
+
+  kafka:
+    bootstrap-servers: localhost:9094,localhost:9095
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        schema.registry.url:  http://localhost:8081  # Schema Registry ???????? ?? 8081
+    consumer:
+      group-id: auth-service-consumer-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        schema.registry.url: http://localhost:8081
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true  # важно для существующих БД
+    schemas: public
