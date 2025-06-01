@@ -1,5 +1,6 @@
 package com.example.auth.service.register;
 
+import com.example.auth.dto.AuthTokens;
 import com.example.auth.dto.UserRegisterRequest;
 import com.example.auth.dto.UserRegisterResponse;
 import com.example.auth.dto.mapper.UserMapper;
@@ -7,6 +8,7 @@ import com.example.auth.entity.Role;
 import com.example.auth.entity.User;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.service.jwt.JwtService;
+import com.example.auth.service.role.RoleService;
 import com.example.notification.UserRegistrationNotification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -29,6 +31,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final KafkaTemplate<String, UserRegistrationNotification> kafkaTemplate;
     private final JwtService jwtService;
+    private final RoleService roleService;
 
     @Override
     @Transactional
@@ -37,29 +40,16 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         userValidationService.checkPhoneNumberUniqueness(userRegisterRequest.getNumberPhone());
         User user = userMapper.toRegisterEntity(userRegisterRequest);
         user.setPassword(passwordEncoder.encode(userRegisterRequest.getPassword()));
-        User saveUser = userRepository.save(user);
-        sendUserRegistrationEvent(saveUser);
-        UserRegisterResponse userRegisterResponse = userMapper.toRegisterDto(saveUser);
-        userRegisterResponse.setAccessToken(accessToken(saveUser));
-        userRegisterResponse.setRefreshToken(refreshToken(saveUser.getId().toString()));
-        return userRegisterResponse;
+        user.setRoles(List.of(roleService.getDefaultUserRole()));
+        User saveUser = userRepository.saveAndFlush(user);
+        sendUserRegistrationEvent(user);
+        AuthTokens authTokens = generateAuthTokens(saveUser);
+
+        return buildResponse(user, authTokens);
     }
 
-    private String accessToken(User user) {
-        List<String> role = user.getRoles().stream()
-                .map(Role::getName).toList();
-        return jwtService.generateAccessToken(
-                user.getId().toString(),
-                role,
-                user.getEmail()
-        );
-    }
 
-    private String refreshToken(String userId) {
-        return jwtService.generateRefreshToken(userId);
-    }
-
-    private void sendUserRegistrationEvent(User user)  {
+    private void sendUserRegistrationEvent(User user) {
         UserRegistrationNotification event = UserRegistrationNotification.newBuilder()
                 .setUserId(user.getId().toString())
                 .setRegistrationDate(user.getCreatedAt().toString())
@@ -71,4 +61,30 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         log.info("Отправлен топик: {}", event);
 
     }
+
+    private AuthTokens generateAuthTokens(User user) {
+        List<String> role = user.getRoles().stream()
+                .map(Role::getName).toList();
+        return AuthTokens.builder()
+                .accessToken(jwtService.generateAccessToken(
+                        user.getEmail(),
+                        role,
+                        user.getId().toString()
+                ))
+                .refreshToken(jwtService.generateRefreshToken(user.getId().toString()))
+                .build();
+    }
+
+    private UserRegisterResponse buildResponse(User user, AuthTokens authTokens) {
+        return UserRegisterResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .createdAt(user.getCreatedAt())
+                .firstname(user.getFirstname())
+                .numberPhone(user.getNumberPhone())
+                .accessToken(authTokens.getAccessToken())
+                .build();
+    }
+
+
 }
