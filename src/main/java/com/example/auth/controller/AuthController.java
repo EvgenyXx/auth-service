@@ -1,5 +1,6 @@
 package com.example.auth.controller;
 
+import com.example.auth.config.JwtCookieProperties;
 import com.example.auth.dto.UserRegisterRequest;
 import com.example.auth.dto.UserRegisterResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,5 +10,6 @@ public interface AuthController {
 
     ResponseEntity<UserRegisterResponse> registerUser(
             UserRegisterRequest registerRequest,
-            HttpServletResponse response);
+            HttpServletResponse response,
+            JwtCookieProperties cookieProperties);
 }

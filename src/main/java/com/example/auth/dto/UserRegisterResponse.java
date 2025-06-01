@@ -21,11 +21,7 @@ public class UserRegisterResponse {
 
 
     private String email;
-
-
-    private String password;
-
-
+    
     private String firstname;
 
 

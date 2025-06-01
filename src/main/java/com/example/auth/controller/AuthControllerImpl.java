@@ -1,5 +1,6 @@
 package com.example.auth.controller;
 
+import com.example.auth.config.JwtCookieProperties;
 import com.example.auth.dto.UserRegisterRequest;
 import com.example.auth.dto.UserRegisterResponse;
 import com.example.auth.service.register.UserRegistrationService;
@@ -15,38 +16,42 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
 
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/register")
+@RequestMapping("/api/v1/auth")
 public class AuthControllerImpl implements AuthController {
 
     private final UserRegistrationService userRegistrationService;
 
     @Override
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<UserRegisterResponse> registerUser(
             @Valid @RequestBody UserRegisterRequest registerRequest,
-            HttpServletResponse response) {
+            HttpServletResponse response,
+            JwtCookieProperties cookieProperties) {
         UserRegisterResponse registerResponse = userRegistrationService.registerUser(registerRequest);
-
-        ResponseCookie responseCookie = ResponseCookie.from("refresh_token",registerResponse.getRefreshToken())
-                .httpOnly(true)
-                .maxAge(Duration.ofDays(30))
-                .path("/api/v1/register")
-                .secure(true)
-                .sameSite("Strict")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE,responseCookie.toString());
-
+        setRefreshTokenCookie(response, registerResponse,cookieProperties);
         UserRegisterResponse userRegisterResponse = registerResponse.withoutTokens();
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .header(HttpHeaders.AUTHORIZATION,"Bearer " + registerResponse.getAccessToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + registerResponse.getAccessToken())
                 .body(userRegisterResponse);
 
+    }
+
+    private void setRefreshTokenCookie(HttpServletResponse response,
+                                       UserRegisterResponse registerResponse,
+                                       JwtCookieProperties cookieProperties) {
+        ResponseCookie responseCookie = ResponseCookie.from(cookieProperties.getName(),
+                        registerResponse.getRefreshToken())
+                .httpOnly(cookieProperties.isHttpOnly())
+                .maxAge(cookieProperties.getMaxAge())
+                .path(cookieProperties.getPath())
+                .secure(cookieProperties.isSecure())
+                .sameSite(cookieProperties.getSameSite())
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
     }
 }
