@@ -3,6 +3,7 @@ package com.example.auth.service.register;
 import com.example.auth.dto.AuthTokens;
 import com.example.auth.dto.UserRegisterRequest;
 import com.example.auth.dto.UserRegisterResponse;
+import com.example.auth.dto.mapper.KafkaEventMapper;
 import com.example.auth.dto.mapper.UserMapper;
 import com.example.auth.entity.Role;
 import com.example.auth.entity.User;
@@ -32,6 +33,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     private final KafkaTemplate<String, UserRegistrationNotification> kafkaTemplate;
     private final JwtService jwtService;
     private final RoleService roleService;
+    private final KafkaEventMapper kafkaEventMapper;
 
     @Override
     @Transactional
@@ -50,16 +52,19 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
 
 
     private void sendUserRegistrationEvent(User user) {
-        UserRegistrationNotification event = UserRegistrationNotification.newBuilder()
-                .setUserId(user.getId().toString())
-                .setRegistrationDate(user.getCreatedAt().toString())
-                .setEmail(user.getEmail())
-                .setFirstname(user.getFirstname())
-                .setNumberPhone(user.getNumberPhone())
-                .build();
-        kafkaTemplate.send("user-registration-topic", event);
-        log.info("Отправлен топик: {}", event);
-
+        try {
+            UserRegistrationNotification event = kafkaEventMapper.toAvro(user);
+            kafkaTemplate.send("user-registration-topic", event)
+                    .whenComplete((result,ex) -> {
+                        if (ex != null) {
+                            log.error("Ошибка отправки в Kafka для пользователя ID: {}", user.getId(), ex);
+                        } else {
+                            log.info("Событие отправлено для пользователя ID: {}", user.getId());
+                        }
+                    });
+        } catch (Exception e) {
+            log.error("Ошибка события для пользователя ID: {}", user.getId(), e);
+        }
     }
 
     private AuthTokens generateAuthTokens(User user) {
