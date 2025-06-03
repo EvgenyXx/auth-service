@@ -18,8 +18,9 @@ import java.util.List;
 
 
 @RestControllerAdvice
-public class ExceptionHandlerAdvice {
+public class UserExceptionHandler {
     private static final String PATH = "uri=";
+    private static final String USER_NOT_FOUND = "User not found";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationExceptions(
@@ -74,6 +75,19 @@ public class ExceptionHandlerAdvice {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiError>handleUserNotFound(UserNotFoundException e,
+                                                      WebRequest webRequest){
+        ApiError apiError = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .error(USER_NOT_FOUND)
+                .status(HttpStatus.NOT_FOUND.value())
+                .path(webRequest.getDescription(false).replace(PATH,""))
+                .message(e.getMessage())
+                .build();
+        return new ResponseEntity<>(apiError,HttpStatus.NOT_FOUND);
     }
 
 

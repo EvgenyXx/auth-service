@@ -1,4 +1,4 @@
-package com.example.auth.exception;
+package com.example.auth.exception.token;
 
 public class TokenBlacklistedException extends RuntimeException {
 
