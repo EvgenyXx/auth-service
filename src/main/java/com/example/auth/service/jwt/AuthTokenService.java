@@ -6,4 +6,6 @@ import com.example.auth.entity.User;
 public interface AuthTokenService {
 
     AuthTokens generateAuthTokens(User user);
+
+    AuthTokens refreshToken(String refreshToken);
 }
