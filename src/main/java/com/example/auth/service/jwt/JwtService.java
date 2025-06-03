@@ -1,26 +1,44 @@
 package com.example.auth.service.jwt;
 
+
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class JwtService {
 
-    private static final String SECRET_KEY = "bNDoES6IHyt9YhNeF7GpFj1hRAhO0jDhXf3Dnk4fZl4=";
 
+    private final String secretKey;
+    private final Duration accessTokenExpiration;
+    private final Duration refreshTokenExpiration;
 
+    public JwtService(
+            @Value("${spring.security.jwt.secret}") String secretKey,
+            @Value("${spring.security.jwt.expiration.access}") Duration accessTokenExpiration,
+            @Value("${spring.security.jwt.expiration.refresh}") Duration refreshTokenExpiration
+    ) {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalArgumentException("JWT secret key is not configured!");
+        }
+        this.secretKey = secretKey;
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
+    }
 
-    public String generateAccessToken(String userId, List<String> roles,String email) {
+    public String generateAccessToken(String userId, List<String> roles, String email) {
         return Jwts.builder()
                 .subject(userId)
                 .claims(Map.of(
@@ -28,7 +46,8 @@ public class JwtService {
                         "email", email // опционально
                 ))
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 30 * 60 * 1000)) // 30 мин
+                .expiration(new Date(System.currentTimeMillis() +
+                        accessTokenExpiration.toMillis()))
                 .signWith(getSecretKey())
                 .compact();
     }
@@ -38,16 +57,34 @@ public class JwtService {
                 .subject(userId)
                 .claim("jti", UUID.randomUUID().toString()) // Уникальный ID токена
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000)) // 30 дней
+                .expiration(new Date(System.currentTimeMillis() +
+                        refreshTokenExpiration.toMillis()))
                 .signWith(getSecretKey())
                 .compact();
     }
 
 
-
-    private Key getSecretKey() {
-        byte[]keyByte = Decoders.BASE64.decode(SECRET_KEY);
+    private SecretKey getSecretKey() {
+        byte[] keyByte = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyByte);
+    }
+
+    public boolean isTokenExpired(String token){
+        return !extractAllClaims(token)
+                .getExpiration().after(new Date());
+    }
+
+    public String extractSubject(String token){
+        return extractAllClaims(token).getSubject();
+    }
+
+
+    private Claims extractAllClaims(String token){
+        return Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
 

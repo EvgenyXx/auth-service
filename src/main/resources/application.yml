@@ -2,6 +2,23 @@ server:
   port: 8082
 
 spring:
+  security:
+    jwt:
+      secret: "bNDoES6IHyt9YhNeF7GpFj1hRAhO0jDhXf3Dnk4fZl4="
+      expiration:
+        access: 30m  # 30 минут
+        refresh: 30d  # 30 дней
+
+
+      cookie:
+        name: "refresh_token"
+        path: /api/v1/auth
+        secure: true
+        http-only: true
+        same-site: Strict
+        max-age: 30d  # Duration format
+
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -30,3 +47,21 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true  # важно для существующих БД
     schemas: public
+
+  data:
+    redis:
+      host: localhost  # или IP вашего Redis сервера
+      port: 6379       # стандартный порт Redis
+      password:        # если у вас установлен пароль
+      timeout: 5000    # таймаут подключения в миллисекундах
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+
+
+
+
+
