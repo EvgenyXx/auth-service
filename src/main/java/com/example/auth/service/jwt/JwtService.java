@@ -1,19 +1,21 @@
 package com.example.auth.service.jwt;
 
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class JwtService {
@@ -44,7 +46,8 @@ public class JwtService {
                         "email", email // опционально
                 ))
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration.toMillis()))
+                .expiration(new Date(System.currentTimeMillis() +
+                        accessTokenExpiration.toMillis()))
                 .signWith(getSecretKey())
                 .compact();
     }
@@ -54,16 +57,36 @@ public class JwtService {
                 .subject(userId)
                 .claim("jti", UUID.randomUUID().toString()) // Уникальный ID токена
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration.toMillis()))
+                .expiration(new Date(System.currentTimeMillis() +
+                        refreshTokenExpiration.toMillis()))
                 .signWith(getSecretKey())
                 .compact();
     }
 
 
-    private Key getSecretKey() {
+    private SecretKey getSecretKey() {
         byte[] keyByte = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyByte);
     }
+
+    public boolean isTokenExpired(String token){
+        return !extractAllClaims(token)
+                .getExpiration().after(new Date());
+    }
+
+    public String extractSubject(String token){
+        return extractAllClaims(token).getSubject();
+    }
+
+
+    private Claims extractAllClaims(String token){
+        return Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
 
 
 }
