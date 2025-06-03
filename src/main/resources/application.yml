@@ -48,6 +48,17 @@ spring:
     baseline-on-migrate: true  # важно для существующих БД
     schemas: public
 
+  data:
+    redis:
+      host: localhost  # или IP вашего Redis сервера
+      port: 6379       # стандартный порт Redis
+      password:        # если у вас установлен пароль
+      timeout: 5000    # таймаут подключения в миллисекундах
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
 
 
 
