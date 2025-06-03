@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(List.of(roleService.getDefaultUserRole()));
         user.setNumberPhone(PhoneNormalizer.normalize(user.getNumberPhone()));
-        User saveUser = userRepository.save(user);
+        User saveUser = userRepository.saveAndFlush(user);
         kafkaEventSender.sendUserRegistrationEvent(user);
         return saveUser;
     }
