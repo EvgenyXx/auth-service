@@ -1,8 +1,6 @@
 package com.example.auth.dto.mapper;
 
-import com.example.auth.dto.AuthTokens;
-import com.example.auth.dto.UserRegisterRequest;
-import com.example.auth.dto.UserRegisterResponse;
+import com.example.auth.dto.*;
 import com.example.auth.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,4 +14,7 @@ public interface UserMapper {
 
     @Mapping(target = "accessToken", source = "authTokens.accessToken")
     UserRegisterResponse toRegisterResponse(User user, AuthTokens authTokens);
+
+    @Mapping(target = "accessToken", source = "authTokens.accessToken")
+    LoginResponse toLoginDto(User user,AuthTokens authTokens);
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
+
 @Service
 @RequiredArgsConstructor
 public class TokenBlacklistService {
@@ -22,8 +23,12 @@ public class TokenBlacklistService {
     }
 
     // Проверить наличие токена в чёрном списке
-    public boolean isTokenBlacklisted(String token) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+    public boolean isTokenBlacklisted(String refreshToken) {
+        if (redisTemplate == null) {
+            throw new IllegalStateException("RedisTemplate is not initialized!");
+        }
+        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + refreshToken));
+
     }
 
     // Удалить токен из чёрного списка

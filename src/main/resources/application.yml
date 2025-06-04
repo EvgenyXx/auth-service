@@ -17,6 +17,7 @@ spring:
         http-only: true
         same-site: Strict
         max-age: 30d  # Duration format
+        domain: "localhost"
 
 
   jpa:
@@ -35,12 +36,15 @@ spring:
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       properties:
         schema.registry.url:  http://localhost:8081  # Schema Registry ???????? ?? 8081
+        auto.register.schemas: true
+        use.latest.version: true
     consumer:
       group-id: auth-service-consumer-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       properties:
         schema.registry.url: http://localhost:8081
+        specific.avro.reader: true
 
   flyway:
     enabled: true
