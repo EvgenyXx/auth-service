@@ -15,14 +15,17 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
     private LocalDateTime timestamp;
     private int status;
     private String error;
     private String message;  // Общее сообщение
     private String path;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<FieldValidationError> fieldErrors; // Специфичные ошибки полей
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ConflictField>conflicts;
 
     @Data
