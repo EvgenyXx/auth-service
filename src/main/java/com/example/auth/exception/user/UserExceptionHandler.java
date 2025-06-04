@@ -12,16 +12,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import java.time.LocalDateTime;
 
-import java.util.Collections;
 import java.util.List;
 
+import static com.example.auth.exception.ApiError.*;
 
 
 @RestControllerAdvice
 public class UserExceptionHandler {
-    private static final String PATH = "uri=";
+
 
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -40,7 +39,7 @@ public class UserExceptionHandler {
                 .toList();
 
         return buildErrorResponse(
-                "Ошибка валидации данных",
+                DEFAULT_VALIDATION_ERROR,
                 request,
                 HttpStatus.BAD_REQUEST,
                 null,
@@ -61,7 +60,7 @@ public class UserExceptionHandler {
                         conflict.message())).toList();
 
         return buildErrorResponse(
-                ex.getMessage(),
+                DUPLICATE_USER_DATA,
                 request,
                 HttpStatus.CONFLICT,
                 apiConflictFields,
@@ -102,25 +101,7 @@ public class UserExceptionHandler {
         );
     }
 
-    private ResponseEntity<ApiError> buildErrorResponse(
-            String message,
-            WebRequest request,
-            HttpStatus status,
-            List<ApiError.ConflictField> conflicts,
-            List<ApiError.FieldValidationError> fieldErrors) {
 
-        ApiError apiError = ApiError.builder()
-                .timestamp(LocalDateTime.now())
-                .status(status.value())
-                .error(status.getReasonPhrase())
-                .message(message)
-                .path(request.getDescription(false).replace(PATH, ""))
-                .conflicts(conflicts != null ? conflicts : Collections.emptyList())
-                .fieldErrors(fieldErrors != null ? fieldErrors : Collections.emptyList())
-                .build();
-
-        return ResponseEntity.status(status).body(apiError);
-    }
 
 
 
