@@ -22,6 +22,7 @@ public class JwtCookieProperties {
     private boolean httpOnly;
     private String sameSite;
     private Duration maxAge;
+    private String domain;
 
 
 }

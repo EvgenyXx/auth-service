@@ -1,6 +1,7 @@
 package com.example.auth.dto;
 
-public class InvalidCredentialsException extends Throwable {
-    public InvalidCredentialsException(String проверьтеПравильностьПароля) {
+public class InvalidCredentialsException extends RuntimeException {
+    public InvalidCredentialsException(String message) {
+        super(message);
     }
 }

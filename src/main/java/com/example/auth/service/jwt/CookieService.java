@@ -28,6 +28,7 @@ public class CookieService {
                 .maxAge(jwtCookieProperties.getMaxAge())
                 .sameSite(jwtCookieProperties.getSameSite())
                 .secure(jwtCookieProperties.isSecure())
+                .domain(jwtCookieProperties.getDomain())
                 .build();
     }
 

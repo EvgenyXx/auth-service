@@ -1,6 +1,7 @@
 package com.example.auth.exception.user;
 
 
+import com.example.auth.dto.InvalidCredentialsException;
 import com.example.auth.exception.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -20,7 +22,7 @@ import java.util.List;
 @RestControllerAdvice
 public class UserExceptionHandler {
     private static final String PATH = "uri=";
-    private static final String USER_NOT_FOUND = "User not found";
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationExceptions(
@@ -37,16 +39,13 @@ public class UserExceptionHandler {
                         .build())
                 .toList();
 
-        ApiError apiError = ApiError.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message("Validation failed")
-                .path(request.getDescription(false).replace(PATH, ""))
-                .fieldErrors(fieldErrors)
-                .build();
-
-        return ResponseEntity.badRequest().body(apiError);
+        return buildErrorResponse(
+                "Ошибка валидации данных",
+                request,
+                HttpStatus.BAD_REQUEST,
+                null,
+                fieldErrors
+        );
     }
 
 
@@ -59,36 +58,70 @@ public class UserExceptionHandler {
         List<ApiError.ConflictField> apiConflictFields = ex.getConflictFields().stream()
                 .map(conflict -> new ApiError.ConflictField(
                         conflict.field(),
-                        conflict.message()
-                        )
-                )
-                .toList();
+                        conflict.message())).toList();
 
-        ApiError apiError = ApiError.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.CONFLICT.value())
-                .error(HttpStatus.CONFLICT.getReasonPhrase())
-                .message(ex.getMessage())  // Используем сообщение из исключения
-                .path(request.getDescription(false).replace(PATH, ""))
-                .conflicts(apiConflictFields)
-
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
+        return buildErrorResponse(
+                ex.getMessage(),
+                request,
+                HttpStatus.CONFLICT,
+                apiConflictFields,
+                null
+        );
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiError>handleUserNotFound(UserNotFoundException e,
-                                                      WebRequest webRequest){
+    public ResponseEntity<ApiError>handleUserNotFound(UserNotFoundException e, WebRequest webRequest){
+        return buildErrorResponse(
+                e.getMessage(),
+                webRequest,
+                HttpStatus.NOT_FOUND,
+                null,
+                null
+        );
+    }
+
+    @ExceptionHandler(AccountBlockedException.class)
+    public ResponseEntity<ApiError>handleAccountBlocked(AccountBlockedException e, WebRequest webRequest){
+        return buildErrorResponse(
+                e.getMessage(),
+                webRequest,
+                HttpStatus.LOCKED,
+                null,
+                null
+        );
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError>handleInvalidCredentials(InvalidCredentialsException e, WebRequest webRequest){
+        return buildErrorResponse(
+                e.getMessage(),
+                webRequest,
+                HttpStatus.UNAUTHORIZED,
+                null,
+                null
+        );
+    }
+
+    private ResponseEntity<ApiError> buildErrorResponse(
+            String message,
+            WebRequest request,
+            HttpStatus status,
+            List<ApiError.ConflictField> conflicts,
+            List<ApiError.FieldValidationError> fieldErrors) {
+
         ApiError apiError = ApiError.builder()
                 .timestamp(LocalDateTime.now())
-                .error(USER_NOT_FOUND)
-                .status(HttpStatus.NOT_FOUND.value())
-                .path(webRequest.getDescription(false).replace(PATH,""))
-                .message(e.getMessage())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .message(message)
+                .path(request.getDescription(false).replace(PATH, ""))
+                .conflicts(conflicts != null ? conflicts : Collections.emptyList())
+                .fieldErrors(fieldErrors != null ? fieldErrors : Collections.emptyList())
                 .build();
-        return new ResponseEntity<>(apiError,HttpStatus.NOT_FOUND);
+
+        return ResponseEntity.status(status).body(apiError);
     }
+
 
 
 

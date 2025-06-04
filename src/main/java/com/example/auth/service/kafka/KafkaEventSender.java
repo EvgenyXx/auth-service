@@ -1,8 +1,9 @@
 package com.example.auth.service.kafka;
 
-import com.example.auth.entity.User;
+
+import com.example.auth.event.UserCreatedEvent;
 
 public interface KafkaEventSender {
 
-    void sendUserRegistrationEvent(User user);
+    void sendUserRegistrationEvent(UserCreatedEvent userCreatedEvent);
 }

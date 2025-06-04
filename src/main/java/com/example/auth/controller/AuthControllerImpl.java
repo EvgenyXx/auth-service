@@ -1,9 +1,7 @@
 package com.example.auth.controller;
 
 
-import com.example.auth.dto.AuthTokens;
-import com.example.auth.dto.UserRegisterRequest;
-import com.example.auth.dto.UserRegisterResponse;
+import com.example.auth.dto.*;
 import com.example.auth.service.jwt.AuthTokenService;
 import com.example.auth.service.jwt.CookieService;
 import com.example.auth.service.register.UserRegistrationService;
@@ -14,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 
 @RequiredArgsConstructor
@@ -56,6 +55,16 @@ public class AuthControllerImpl implements AuthController {
                 .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER_PREFIX
                         + authTokens.getAccessToken())
                 .build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest,HttpServletResponse servletResponse) {
+        LoginResponse loginResponse = userRegistrationService.login(loginRequest);
+        cookieService.setRefreshTokenCookie(servletResponse, loginResponse.getRefreshToken());
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .header(HttpHeaders.AUTHORIZATION,AUTH_HEADER_PREFIX + loginResponse.getAccessToken())
+                .body(loginResponse);
     }
 
 
