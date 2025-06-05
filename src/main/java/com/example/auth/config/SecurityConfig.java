@@ -21,13 +21,18 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-       httpSecurity
-               .authorizeHttpRequests(auth->auth
-                       .requestMatchers("/api/v1/auth/**").permitAll()
-                       .anyRequest().authenticated())
-               .csrf(AbstractHttpConfigurer::disable)
-               .httpBasic(Customizer.withDefaults());
-       return httpSecurity.build();
+        httpSecurity
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .httpBasic(Customizer.withDefaults());
+        return httpSecurity.build();
     }
 
 
