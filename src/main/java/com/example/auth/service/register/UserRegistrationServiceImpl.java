@@ -45,7 +45,6 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         String normalizedPhone = PhoneNormalizer.normalize(loginRequest.getNumberPhone());
-
         loginAttemptService.checkIfBlocked(normalizedPhone);
         User user = userService.findByNumberPhone(normalizedPhone);
         validatePasswordAndHandleAttempts(loginRequest.getRawPassword(), user,normalizedPhone);

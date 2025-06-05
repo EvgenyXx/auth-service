@@ -66,6 +66,14 @@ spring:
 
 
 
-
+springdoc:
+  swagger-ui:
+    path: /swagger-ui/index.html  # стандартный путь
+    tags-sorter: alpha      # сортировка тегов по алфавиту
+    operations-sorter: alpha # сортировка операций по алфавиту
+    persistAuthorization: true  # Сохранять авторизацию между перезагрузками
+    withCredentials: true       # Разрешить передачу cookies
+  api-docs:
+    path: /v3/api-docs      # путь к JSON-спецификации OpenAPI
 
 
