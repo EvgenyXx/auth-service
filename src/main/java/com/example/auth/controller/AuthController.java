@@ -23,5 +23,5 @@ public interface AuthController {
 
     ResponseEntity<Void> requestPasswordReset(ForgotPasswordRequest request);
 
-    ResponseEntity<Void> resetPassword(String token, String newPassword);
+    ResponseEntity<Void> resetPassword(PasswordResetRequest request);
 }

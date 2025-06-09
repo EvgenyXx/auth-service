@@ -146,9 +146,26 @@ public class AuthControllerImpl implements AuthController {
 
 
 
-    //TODO долеать !
+    @Operation(
+            summary = "Смена пароля через токен",
+            description = "Завершающий этап сброса пароля. Принимает токен и новый пароль.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Пароль изменён"),
+                    @ApiResponse(responseCode = "400", description = "Невалидные данные"),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Проблемы с токеном: просрочен или недействителен"
+                    ),
+                    @ApiResponse(
+                            responseCode = "409",
+                            description = "Активный запрос существует"
+                    )
+            }
+    )
     @Override
-    public ResponseEntity<Void> resetPassword(String token, String newPassword) {
-        return null;
+    @PostMapping("/resent-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetRequest request) {
+        passwordResetService.resetPassword(request);
+        return ResponseEntity.ok().build();
     }
 }
