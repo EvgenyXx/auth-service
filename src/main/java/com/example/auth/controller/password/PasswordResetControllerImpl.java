@@ -5,6 +5,7 @@ import com.example.auth.dto.PasswordResetRequest;
 import com.example.auth.service.password.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth/password")
+@Tag(name = "Password Management",
+        description = "Восстановление и сброс пароля")
 public class PasswordResetControllerImpl implements PasswordResetController {
 
-    private static final String PASSWORD_TAG = "Password";
+
 
     private final PasswordResetService passwordResetService;
 
@@ -31,8 +34,7 @@ public class PasswordResetControllerImpl implements PasswordResetController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Параметры для сброса пароля",
                     required = true
-            ),
-    tags = {PASSWORD_TAG,"Request-password-reset"})
+            ))
     @PostMapping("/forgot")
     @Override
     public ResponseEntity<Void> requestPasswordReset(@RequestBody @Valid ForgotPasswordRequest request) {
@@ -56,8 +58,7 @@ public class PasswordResetControllerImpl implements PasswordResetController {
                             responseCode = "409",
                             description = "Активный запрос существует"
                     )
-            },
-            tags = {PASSWORD_TAG,"Reset-password"}
+            }
     )
     @Override
     @PostMapping("/reset")
