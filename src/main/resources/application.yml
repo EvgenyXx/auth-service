@@ -75,7 +75,7 @@ app:
       token: "pwd_reset:token:"
       email: "pwd_reset:email:"
       auth-session: "session:"
-    tels:
+    ttl:
       password-reset: 1h     # 1 час
       email-verification: 24h # 24 часа
       auth-session: 7d      # 7 дней
