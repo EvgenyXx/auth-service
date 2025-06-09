@@ -10,19 +10,26 @@ import com.example.auth.repository.UserRepository;
 import com.example.auth.service.role.RoleService;
 import com.example.auth.util.PhoneNormalizer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
+    private static final String USER_NOT_FOUND = "User not found";
+
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final PasswordEncoder passwordEncoder;
 
 
 
@@ -50,7 +57,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findById(UUID userId) {
         return userRepository.findById(userId).orElseThrow(
-                ()-> new UserNotFoundException("Пользователь не найден")
+                ()-> new UserNotFoundException(USER_NOT_FOUND)
         );
     }
 
@@ -60,5 +67,19 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()-> new UserNotFoundException(
                         "Неверные учетные данные !"
                 ));
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(()->new UserNotFoundException(USER_NOT_FOUND));
+    }
+
+    @Override
+    public void updatePassword(String email, String newPassword) {
+       User user = findByEmail(email);
+       String passwordUpdate = passwordEncoder.encode(newPassword);
+       user.setPassword(passwordUpdate);
+       userRepository.save(user);
     }
 }
