@@ -40,5 +40,29 @@ public class TokenExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ActiveResetRequestException.class)
+    public ResponseEntity<ApiError>handleActiveResetRequest(ActiveResetRequestException e,
+                                                      WebRequest webRequest){
+        return buildErrorResponse(
+                e.getMessage(),
+                webRequest,
+                HttpStatus.CONFLICT,
+                null,
+                null
+        );
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiError>handleInvalidTokenException(InvalidTokenException e,
+                                                               WebRequest webRequest){
+        return buildErrorResponse(
+                e.getMessage(),
+                webRequest,
+                HttpStatus.UNAUTHORIZED,
+                null,
+                null
+        );
+    }
+
 
 }

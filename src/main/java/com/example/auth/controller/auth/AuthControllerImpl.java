@@ -1,9 +1,10 @@
-package com.example.auth.controller;
+package com.example.auth.controller.auth;
 
 
 import com.example.auth.dto.*;
 import com.example.auth.service.jwt.AuthTokenService;
 import com.example.auth.service.jwt.CookieService;
+import com.example.auth.service.password.PasswordResetService;
 import com.example.auth.service.register.UserRegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,12 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -29,6 +32,7 @@ public class AuthControllerImpl implements AuthController {
     private final UserRegistrationService userRegistrationService;
     private final CookieService cookieService;
     private final AuthTokenService authTokenService;
+
 
     @Override
     @PostMapping("/register")
@@ -121,6 +125,5 @@ public class AuthControllerImpl implements AuthController {
                 .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER_PREFIX + loginResponse.getAccessToken())
                 .body(loginResponse);
     }
-
 
 }

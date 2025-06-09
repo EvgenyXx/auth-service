@@ -1,10 +1,7 @@
-package com.example.auth.controller;
+package com.example.auth.controller.auth;
 
 
-import com.example.auth.dto.LoginRequest;
-import com.example.auth.dto.LoginResponse;
-import com.example.auth.dto.UserRegisterRequest;
-import com.example.auth.dto.UserRegisterResponse;
+import com.example.auth.dto.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -23,4 +20,6 @@ public interface AuthController {
     ResponseEntity<LoginResponse> login(
             @RequestBody LoginRequest loginRequest,
             HttpServletResponse servletResponse);
+
+
 }

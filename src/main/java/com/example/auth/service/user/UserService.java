@@ -14,14 +14,14 @@ public interface UserService {
 
     boolean existsByNumberPhone(String numberPhone);
 
-
-
-
     User findById(UUID userId);
 
     User createUser(User user);
 
     User findByNumberPhone(String numberPhone);
 
+    User findByEmail(String email);
 
+
+    void updatePassword(String email, String newPassword);
 }
