@@ -3,6 +3,9 @@ package com.example.auth.service.password;
 import com.example.auth.dto.ForgotPasswordRequest;
 import com.example.auth.entity.User;
 import com.example.auth.event.PasswordResentEvent;
+import com.example.auth.exception.token.ActiveResetRequestException;
+import com.example.auth.exception.token.InvalidTokenException;
+import com.example.auth.exception.token.ExpiredTokenException;
 import com.example.auth.exception.user.UserNotFoundException;
 import com.example.auth.service.redis.RedisPasswordResetTokenStorage;
 import com.example.auth.service.user.UserService;
@@ -27,6 +30,12 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     public void requestPasswordReset(ForgotPasswordRequest request) {
         try {
+            if (hasActiveResetRequest(request.email())){
+                throw new ActiveResetRequestException(
+                        "На ваш email уже отправлена ссылка для смены пароля. " +
+                                "Проверьте почту или повторите запрос позже."
+                );
+            }
             User user = userService.findByEmail(request.email());
             String token = generateToken();
             resetTokenStorage.saveToken(user.getEmail(), token);
@@ -45,21 +54,22 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     public void resetPassword(String token, String newPassword) {
 
         String email = resetTokenStorage.getEmailByToken(token);
-        if (!resetTokenStorage.isTokenValid(email, token)) {
-            throw new IllegalStateException("ТОКЕН НЕ ВАЛДИНЫЙ");
+
+        //TODO сделать исключение
+        if (!resetTokenStorage.isTokenValid(token)) {
+            // Проверяем отдельно, истёк ли токен
+            if (!resetTokenStorage.isTokenActive(email)) {
+                throw new ExpiredTokenException("Срок действия токена истёк. Запросите новый");
+            }
+            throw new InvalidTokenException("Токен недействителен");
         }
         userService.updatePassword(email,newPassword);
         resetTokenStorage.deleteToken(email);
     }
 
     @Override
-    public void revokeToken(String email) {
-
-    }
-
-    @Override
     public boolean hasActiveResetRequest(String email) {
-        return false;
+        return resetTokenStorage.hasToken(email) && resetTokenStorage.isTokenActive(email);
     }
 
     @Override

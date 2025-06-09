@@ -25,12 +25,6 @@ public interface PasswordResetService {
      */
     void resetPassword( String token, String newPassword);
 
-    /**
-     * Принудительно удаляет токен сброса пароля (например, при отмене операции).
-     *
-     * @param email Email пользователя.
-     */
-    void revokeToken(String email);
 
     /**
      * Проверяет, есть ли активный запрос на сброс пароля для email.
