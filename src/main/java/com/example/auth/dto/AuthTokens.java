@@ -1,12 +1,18 @@
 package com.example.auth.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Builder
-@Data
-public class AuthTokens {
+@Schema(description = "Модель, содержащая access и refresh токены для аутентификации")
+public record AuthTokens(
+        @Schema(
+                description = "JWT access токен для авторизации запросов",
+                example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        )
+        String accessToken,
 
-    private String accessToken;
-    private String refreshToken;
-}
+        @Schema(
+                description = "JWT refresh токен для обновления access токена",
+                example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        )
+        String refreshToken
+) {}
