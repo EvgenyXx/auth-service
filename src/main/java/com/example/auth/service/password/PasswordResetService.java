@@ -1,6 +1,7 @@
 package com.example.auth.service.password;
 
 import com.example.auth.dto.ForgotPasswordRequest;
+import com.example.auth.dto.PasswordResetRequest;
 
 import java.util.UUID;
 
@@ -19,11 +20,13 @@ public interface PasswordResetService {
     /**
      * Устанавливает новый пароль пользователя, если токен валиден.
      *
-     * @param token       Токен из ссылки.
-     * @param newPassword Новый пароль.
+
+     * @param request Объект запроса на сброс пароля, содержащий:
+     *                - токен сброса пароля
+     *                - новый пароль
      * @throws IllegalArgumentException если токен недействителен.
      */
-    void resetPassword( String token, String newPassword);
+    void resetPassword(PasswordResetRequest request);
 
 
     /**
