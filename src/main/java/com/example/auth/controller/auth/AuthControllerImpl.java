@@ -4,12 +4,12 @@ package com.example.auth.controller.auth;
 import com.example.auth.dto.*;
 import com.example.auth.service.jwt.AuthTokenService;
 import com.example.auth.service.jwt.CookieService;
-import com.example.auth.service.password.PasswordResetService;
 import com.example.auth.service.register.UserRegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +24,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "Authentication",
+        description = "Регистрация, вход и управление токенами доступа")
 public class AuthControllerImpl implements AuthController {
 
     private static final String AUTH_HEADER_PREFIX = "Bearer ";
-    private static final String USER_TAG = "User";
+
 
     private final UserRegistrationService userRegistrationService;
     private final CookieService cookieService;
@@ -43,11 +45,8 @@ public class AuthControllerImpl implements AuthController {
                     @ApiResponse(responseCode = "201", description = "При успешной регистрации пользователя"),
                     @ApiResponse(responseCode = "400", description = "Неверные данные"),
                     @ApiResponse(responseCode = "409", description = "Конфликт введённых данных с уже существующими в базе данных")
-            },
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Данные для регистрации нового пользователя", required = true
-            ),
-            tags = {USER_TAG, "Registration"})
+            }
+            )
     public ResponseEntity<UserRegisterResponse> registerUser(
             @Valid @RequestBody UserRegisterRequest registerRequest,
             HttpServletResponse response) {
@@ -91,11 +90,11 @@ public class AuthControllerImpl implements AuthController {
             @CookieValue("${spring.security.jwt.cookie.name}") String refreshToken,
             HttpServletResponse response) {
         AuthTokens authTokens = authTokenService.refreshToken(refreshToken);
-        cookieService.setRefreshTokenCookie(response, authTokens.getRefreshToken());
+        cookieService.setRefreshTokenCookie(response, authTokens.refreshToken());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header(HttpHeaders.AUTHORIZATION, AUTH_HEADER_PREFIX
-                        + authTokens.getAccessToken())
+                        + authTokens.accessToken())
                 .build();
     }
 
@@ -112,10 +111,7 @@ public class AuthControllerImpl implements AuthController {
                     @ApiResponse(responseCode = "401", description = "Неверные учетные данные (неверный пароль)."),
                     @ApiResponse(responseCode = "404", description = "Пользователь не найден по номеру телефона."),
                     @ApiResponse(responseCode = "423", description = "Аккаунт заблокирован. Попробуйте через некоторое время.")
-            },
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Данные для авторизации пользователя", required = true),
-            tags = {USER_TAG, "Registration"}
+            }
     )
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse servletResponse) {
         LoginResponse loginResponse = userRegistrationService.login(loginRequest);
