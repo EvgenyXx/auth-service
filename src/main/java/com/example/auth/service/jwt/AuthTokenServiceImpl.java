@@ -5,6 +5,7 @@ import com.example.auth.entity.Role;
 import com.example.auth.entity.User;
 import com.example.auth.exception.token.ExpiredTokenException;
 import com.example.auth.exception.token.TokenBlacklistedException;
+import com.example.auth.service.redis.TokenRedisBlacklistService;
 import com.example.auth.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import java.util.UUID;
 public class AuthTokenServiceImpl implements AuthTokenService {
     private final JwtService jwtService;
     private final UserService userService;
-    private final TokenBlacklistService tokenBlacklistService;
+    private final TokenRedisBlacklistService tokenRedisBlacklistService;
 
 
 
@@ -26,7 +27,6 @@ public class AuthTokenServiceImpl implements AuthTokenService {
     @Override
     public AuthTokens generateAuthTokens(User user) {
         List<String> role = extractRoles(user);
-
         return AuthTokens.builder()
                 .accessToken(jwtService.generateAccessToken(
                         user.getId().toString(),
@@ -46,7 +46,7 @@ public class AuthTokenServiceImpl implements AuthTokenService {
     @Override
     public AuthTokens refreshToken(String refreshToken) {
         // 1. Проверяем, не отозван ли уже токен
-        if (tokenBlacklistService.isTokenBlacklisted(refreshToken)) {
+        if (tokenRedisBlacklistService.isTokenBlacklisted(refreshToken)) {
             throw new TokenBlacklistedException("Токен отозван");
         }
         // 2. Проверяем валидность токена
@@ -56,9 +56,9 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         }
         // 3. Получаем пользователя
         User user = userService.findById(UUID.fromString(userId));
-        tokenBlacklistService.removeFromBlacklist(refreshToken);
+        tokenRedisBlacklistService.removeFromBlacklist(refreshToken);
         // 4. Добавляем старый токен в черный список
-        tokenBlacklistService.addToBlacklist(refreshToken, Duration.ofDays(30));
+        tokenRedisBlacklistService.addToBlacklist(refreshToken, Duration.ofDays(30));
 
         // 5. Генерируем новые токены
         return generateAuthTokens(user);
