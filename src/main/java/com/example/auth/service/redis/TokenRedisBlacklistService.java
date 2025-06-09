@@ -1,4 +1,4 @@
-package com.example.auth.service.jwt;
+package com.example.auth.service.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -9,7 +9,7 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-public class TokenBlacklistService {
+public class TokenRedisBlacklistService {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String BLACKLIST_PREFIX = "bl:";
 
