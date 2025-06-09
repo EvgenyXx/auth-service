@@ -1,4 +1,4 @@
-package com.example.auth.controller;
+package com.example.auth.controller.auth;
 
 
 import com.example.auth.dto.*;
@@ -21,7 +21,5 @@ public interface AuthController {
             @RequestBody LoginRequest loginRequest,
             HttpServletResponse servletResponse);
 
-    ResponseEntity<Void> requestPasswordReset(ForgotPasswordRequest request);
 
-    ResponseEntity<Void> resetPassword(PasswordResetRequest request);
 }

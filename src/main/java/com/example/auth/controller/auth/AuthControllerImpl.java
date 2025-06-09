@@ -1,4 +1,4 @@
-package com.example.auth.controller;
+package com.example.auth.controller.auth;
 
 
 import com.example.auth.dto.*;
@@ -32,7 +32,7 @@ public class AuthControllerImpl implements AuthController {
     private final UserRegistrationService userRegistrationService;
     private final CookieService cookieService;
     private final AuthTokenService authTokenService;
-    private final PasswordResetService passwordResetService;
+
 
     @Override
     @PostMapping("/register")
@@ -126,46 +126,4 @@ public class AuthControllerImpl implements AuthController {
                 .body(loginResponse);
     }
 
-
-    @Operation(summary = "Отправка ссылки для сброса пароля",
-            description = "Метод всегда возвращает 200 OK, даже если email не существует или произошла ошибка. " +
-                    "Это сделано в целях безопасности, чтобы не раскрывать наличие email в системе.",
-    responses = {
-            @ApiResponse(responseCode = "200",description = "Запрос принят в обработку")
-    },
-    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Параметры для сброса пароля",
-            required = true
-    ))
-    @PostMapping("/forgot-password")
-    @Override
-    public ResponseEntity<Void> requestPasswordReset(@RequestBody @Valid ForgotPasswordRequest request) {
-        passwordResetService.requestPasswordReset(request);
-        return ResponseEntity.ok().build();
-    }
-
-
-
-    @Operation(
-            summary = "Смена пароля через токен",
-            description = "Завершающий этап сброса пароля. Принимает токен и новый пароль.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Пароль изменён"),
-                    @ApiResponse(responseCode = "400", description = "Невалидные данные"),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Проблемы с токеном: просрочен или недействителен"
-                    ),
-                    @ApiResponse(
-                            responseCode = "409",
-                            description = "Активный запрос существует"
-                    )
-            }
-    )
-    @Override
-    @PostMapping("/resent-password")
-    public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetRequest request) {
-        passwordResetService.resetPassword(request);
-        return ResponseEntity.ok().build();
-    }
 }
