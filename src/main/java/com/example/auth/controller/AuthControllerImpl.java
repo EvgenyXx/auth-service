@@ -4,6 +4,7 @@ package com.example.auth.controller;
 import com.example.auth.dto.*;
 import com.example.auth.service.jwt.AuthTokenService;
 import com.example.auth.service.jwt.CookieService;
+import com.example.auth.service.password.PasswordResetService;
 import com.example.auth.service.register.UserRegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,12 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -29,6 +32,7 @@ public class AuthControllerImpl implements AuthController {
     private final UserRegistrationService userRegistrationService;
     private final CookieService cookieService;
     private final AuthTokenService authTokenService;
+    private final PasswordResetService passwordResetService;
 
     @Override
     @PostMapping("/register")
@@ -123,4 +127,28 @@ public class AuthControllerImpl implements AuthController {
     }
 
 
+    @Operation(summary = "Отправка ссылки для сброса пароля",
+            description = "Метод всегда возвращает 200 OK, даже если email не существует или произошла ошибка. " +
+                    "Это сделано в целях безопасности, чтобы не раскрывать наличие email в системе.",
+    responses = {
+            @ApiResponse(responseCode = "200",description = "Запрос принят в обработку")
+    },
+    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Параметры для сброса пароля",
+            required = true
+    ))
+    @PostMapping("/forgot-password")
+    @Override
+    public ResponseEntity<Void> requestPasswordReset(@RequestBody @Valid ForgotPasswordRequest request) {
+        passwordResetService.requestPasswordReset(request);
+        return ResponseEntity.ok().build();
+    }
+
+
+
+    //TODO долеать !
+    @Override
+    public ResponseEntity<Void> resetPassword(String token, String newPassword) {
+        return null;
+    }
 }

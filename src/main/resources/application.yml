@@ -34,6 +34,8 @@ spring:
     topics:
       user-registration: user-registration-topic
       user-registration-dlq: user-registration-dlq
+      password-reset: password-reset-topic
+      password-reset-dlq: password-reset-dlq
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
@@ -67,6 +69,16 @@ spring:
           max-idle: 8
           min-idle: 0
 
+app:
+  redis:
+    prefixes:
+      token: "pwd_reset:token:"
+      email: "pwd_reset:email:"
+      auth-session: "session:"
+    tels:
+      password-reset: 1h     # 1 час
+      email-verification: 24h # 24 часа
+      auth-session: 7d      # 7 дней
 
 
 springdoc:
