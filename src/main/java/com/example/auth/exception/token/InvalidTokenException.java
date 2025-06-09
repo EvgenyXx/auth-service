@@ -1,9 +1,9 @@
 package com.example.auth.exception.token;
 
 //TODO ДОБАВИТЬ В ОБЩИЙ ОБРАБОТЧИК
-public class ExpiredTokenException extends RuntimeException {
+public class InvalidTokenException extends RuntimeException {
 
-    public ExpiredTokenException(String message) {
+    public InvalidTokenException(String message) {
         super(message);
     }
 }
