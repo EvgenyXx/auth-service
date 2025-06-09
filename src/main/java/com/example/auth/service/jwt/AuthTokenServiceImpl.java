@@ -27,14 +27,10 @@ public class AuthTokenServiceImpl implements AuthTokenService {
     @Override
     public AuthTokens generateAuthTokens(User user) {
         List<String> role = extractRoles(user);
-        return AuthTokens.builder()
-                .accessToken(jwtService.generateAccessToken(
-                        user.getId().toString(),
-                        role,
-                        user.getEmail()
-                ))
-                .refreshToken(jwtService.generateRefreshToken(user.getId().toString()))
-                .build();
+        return new AuthTokens(
+                jwtService.generateAccessToken(user.getId().toString(),role, user.getEmail()),
+                jwtService.generateRefreshToken(user.getId().toString())
+        );
     }
 
     private List<String> extractRoles(User user){
