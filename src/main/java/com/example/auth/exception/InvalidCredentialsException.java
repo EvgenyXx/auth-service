@@ -1,4 +1,4 @@
-package com.example.auth.dto;
+package com.example.auth.exception;
 
 public class InvalidCredentialsException extends RuntimeException {
     public InvalidCredentialsException(String message) {
