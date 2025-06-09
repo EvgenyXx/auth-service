@@ -1,6 +1,7 @@
 package com.example.auth.service.password;
 
 import com.example.auth.dto.ForgotPasswordRequest;
+import com.example.auth.dto.PasswordResetRequest;
 import com.example.auth.entity.User;
 import com.example.auth.event.PasswordResentEvent;
 import com.example.auth.exception.token.ActiveResetRequestException;
@@ -51,20 +52,26 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
 
     @Override
-    public void resetPassword(String token, String newPassword) {
+    public void resetPassword(PasswordResetRequest request) {
 
-        String email = resetTokenStorage.getEmailByToken(token);
+        try {
+            String email = resetTokenStorage.getEmailByToken(request.token());
 
-        //TODO сделать исключение
-        if (!resetTokenStorage.isTokenValid(token)) {
-            // Проверяем отдельно, истёк ли токен
-            if (!resetTokenStorage.isTokenActive(email)) {
-                throw new ExpiredTokenException("Срок действия токена истёк. Запросите новый");
+            if (!resetTokenStorage.isTokenValid(request.token())) {
+                if (!resetTokenStorage.isTokenActive(email)) {
+                    throw new ExpiredTokenException("Срок действия токена истёк. Запросите новый");
+                }
+                throw new InvalidTokenException("Токен недействителен");
             }
+
+            userService.updatePassword(email, request.newPassword());
+            resetTokenStorage.deleteToken(email);
+
+        } catch (UserNotFoundException e) {
+            log.warn("Password reset attempt for non-existent user, token: {}", request.token());
             throw new InvalidTokenException("Токен недействителен");
         }
-        userService.updatePassword(email,newPassword);
-        resetTokenStorage.deleteToken(email);
+
     }
 
     @Override
