@@ -17,6 +17,7 @@ public abstract class AbstractKafkaSender<E, A extends SpecificRecord> {
 
     protected void sendEvent(String key, E event) {
         try {
+            log.info("Attempting to send to topic: {}", mainTopic);
             A avroMessage = mapper.apply(event);
             kafkaTemplate.send(mainTopic, key, avroMessage)
                     .whenComplete((result, ex) -> {
