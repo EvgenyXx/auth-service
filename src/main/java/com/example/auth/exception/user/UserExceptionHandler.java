@@ -1,7 +1,7 @@
 package com.example.auth.exception.user;
 
 
-import com.example.auth.dto.InvalidCredentialsException;
+import com.example.auth.exception.InvalidCredentialsException;
 import com.example.auth.exception.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
