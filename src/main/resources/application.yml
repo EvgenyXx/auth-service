@@ -2,9 +2,14 @@ server:
   port: 8082
 
 spring:
+  application:
+    name: auth-service
   security:
     jwt:
-      secret: "bNDoES6IHyt9YhNeF7GpFj1hRAhO0jDhXf3Dnk4fZl4="
+      issuer-uri: http://localhost:8082
+      private-key-location: classpath:keys/private.pem
+      public-key-location: classpath:keys/public.pem
+      jwk-set-uri: http://localhost:8082/.well-known/jwks.json
       expiration:
         access: 30m  # 30 минут
         refresh: 30d  # 30 дней
@@ -90,5 +95,21 @@ springdoc:
     withCredentials: true       # Разрешить передачу cookies
   api-docs:
     path: /v3/api-docs      # путь к JSON-спецификации OpenAPI
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true  # Должно быть true!
+    fetch-registry: true
+
+
+logging:
+  level:
+    root: INFO                 # общий уровень логов (можно DEBUG для всего)
+    org.springframework.security: DEBUG   # для Spring Security подробный лог
+    org.springframework.web: DEBUG        # для веб-слоя (контроллеры, фильтры)
+    reactor.netty: DEBUG                   # если используете Netty (WebFlux)
+    com.example: DEBUG                    # ваш пакет, чтобы видеть логи вашего кода
 
 

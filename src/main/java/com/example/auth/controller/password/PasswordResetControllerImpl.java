@@ -11,12 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/auth/password")
 @Tag(name = "Password Management",
         description = "Восстановление и сброс пароля")
 public class PasswordResetControllerImpl implements PasswordResetController {
@@ -35,7 +33,7 @@ public class PasswordResetControllerImpl implements PasswordResetController {
                     description = "Параметры для сброса пароля",
                     required = true
             ))
-    @PostMapping("/forgot")
+    @PostMapping("/password/forgot")
     @Override
     public ResponseEntity<Void> requestPasswordReset(@RequestBody @Valid ForgotPasswordRequest request) {
         passwordResetService.requestPasswordReset(request);
@@ -61,7 +59,7 @@ public class PasswordResetControllerImpl implements PasswordResetController {
             }
     )
     @Override
-    @PostMapping("/reset")
+    @PostMapping("/password/reset")
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetRequest request) {
         passwordResetService.resetPassword(request);
         return ResponseEntity.ok().build();

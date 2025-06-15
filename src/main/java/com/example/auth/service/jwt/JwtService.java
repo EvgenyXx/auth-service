@@ -1,16 +1,12 @@
 package com.example.auth.service.jwt;
 
-
+import com.example.auth.config.JwtKeyProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
-
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
@@ -20,22 +16,23 @@ import java.util.UUID;
 @Service
 public class JwtService {
 
-
-    private final String secretKey;
+    private final PrivateKey privateKey;
+    private final PublicKey publicKey;
     private final Duration accessTokenExpiration;
     private final Duration refreshTokenExpiration;
+    private final String issuer;
 
     public JwtService(
-            @Value("${spring.security.jwt.secret}") String secretKey,
+            JwtKeyProvider keyProvider,
             @Value("${spring.security.jwt.expiration.access}") Duration accessTokenExpiration,
-            @Value("${spring.security.jwt.expiration.refresh}") Duration refreshTokenExpiration
+            @Value("${spring.security.jwt.expiration.refresh}") Duration refreshTokenExpiration,
+            @Value("${spring.security.jwt.issuer-uri}") String issuer
     ) {
-        if (secretKey == null || secretKey.isBlank()) {
-            throw new IllegalArgumentException("JWT secret key is not configured!");
-        }
-        this.secretKey = secretKey;
+        this.privateKey = keyProvider.getPrivateKey();
+        this.publicKey = keyProvider.getRsaPublicKey();
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
+        this.issuer = issuer;
     }
 
     public String generateAccessToken(String userId, List<String> roles, String email) {
@@ -43,50 +40,42 @@ public class JwtService {
                 .subject(userId)
                 .claims(Map.of(
                         "roles", roles,
-                        "email", email // опционально
+                        "email", email
                 ))
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() +
-                        accessTokenExpiration.toMillis()))
-                .signWith(getSecretKey())
+                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration.toMillis()))
+                .issuer(issuer)
+                .signWith(privateKey)
                 .compact();
     }
 
     public String generateRefreshToken(String userId) {
         return Jwts.builder()
                 .subject(userId)
-                .claim("jti", UUID.randomUUID().toString()) // Уникальный ID токена
+                .claim("jti", UUID.randomUUID().toString())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() +
-                        refreshTokenExpiration.toMillis()))
-                .signWith(getSecretKey())
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration.toMillis()))
+                .issuer(issuer)
+                .signWith(privateKey)
                 .compact();
     }
 
-
-    private SecretKey getSecretKey() {
-        byte[] keyByte = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyByte);
+    public boolean isTokenExpired(String token) {
+        return !extractAllClaims(token).getExpiration().after(new Date());
     }
 
-    public boolean isTokenExpired(String token){
-        return !extractAllClaims(token)
-                .getExpiration().after(new Date());
-    }
-
-    public String extractSubject(String token){
+    //TODO пересмотреть правильность
+    public String extractSubject(String token) {
         return extractAllClaims(token).getSubject();
     }
 
 
-    private Claims extractAllClaims(String token){
+
+    private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .verifyWith(getSecretKey())
+                .verifyWith(publicKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
-
-
 }

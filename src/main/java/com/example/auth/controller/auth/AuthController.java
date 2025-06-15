@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public interface AuthController {
 
-    ResponseEntity<UserRegisterResponse> registerUser(
+    ResponseEntity<UserRegisterResponse> signUp(
             UserRegisterRequest registerRequest,
             HttpServletResponse response);
 

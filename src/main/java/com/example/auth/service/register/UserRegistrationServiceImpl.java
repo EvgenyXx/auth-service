@@ -5,6 +5,7 @@ import com.example.auth.dto.mapper.UserMapper;
 import com.example.auth.entity.User;
 import com.example.auth.exception.InvalidCredentialsException;
 import com.example.auth.service.jwt.AuthTokenService;
+import com.example.auth.service.redis.LoginAttemptService;
 import com.example.auth.service.user.UserService;
 import com.example.auth.service.validation.UserValidationService;
 import com.example.auth.util.PhoneNormalizer;

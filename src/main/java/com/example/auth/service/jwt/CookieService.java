@@ -33,4 +33,16 @@ public class CookieService {
     }
 
 
+    public void deleteRefreshTokenOnCookie(HttpServletResponse servletResponse) {
+      ResponseCookie cookie =  ResponseCookie.from(jwtCookieProperties.getName(),"")
+                .httpOnly(jwtCookieProperties.isHttpOnly())
+                .path(jwtCookieProperties.getPath())
+                .maxAge(0)
+                .sameSite(jwtCookieProperties.getSameSite())
+                .secure(jwtCookieProperties.isSecure())
+                .domain(jwtCookieProperties.getDomain())
+                .build();
+        servletResponse.addHeader("Set-Cookie",cookie.toString());
+
+    }
 }

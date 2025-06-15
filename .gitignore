@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Keys ###
+# Блокируем все ключи везде в проекте
+*.pem
+*.key
+*.cert
+
+# Блокируем конкретные папки
+/src/main/resources/keys/
