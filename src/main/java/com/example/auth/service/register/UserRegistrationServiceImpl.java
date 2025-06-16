@@ -49,6 +49,10 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         String normalizedPhone = PhoneNormalizer.normalize(loginRequest.getNumberPhone());
         loginAttemptService.checkIfBlocked(normalizedPhone);
         User user = userService.findByNumberPhone(normalizedPhone);
+        if (user.isBlocked()){
+            //TODO сделать исключение и добавить в центральный обработчик
+            throw new RuntimeException("Аккаунт заблокирован! Обратитесь в поддержку");
+        }
         validatePasswordAndHandleAttempts(loginRequest.getRawPassword(), user,normalizedPhone);
         loginAttemptService.loginSuccess(normalizedPhone);
         AuthTokens authTokens = authTokenService.generateAuthTokens(user);
