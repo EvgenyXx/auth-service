@@ -5,6 +5,7 @@ import com.example.auth.dto.mapper.UserMapper;
 import com.example.auth.entity.User;
 import com.example.auth.exception.InvalidCredentialsException;
 import com.example.auth.service.jwt.AuthTokenService;
+import com.example.auth.service.redis.LoginAttemptService;
 import com.example.auth.service.user.UserService;
 import com.example.auth.service.validation.UserValidationService;
 import com.example.auth.util.PhoneNormalizer;
@@ -48,6 +49,10 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         String normalizedPhone = PhoneNormalizer.normalize(loginRequest.getNumberPhone());
         loginAttemptService.checkIfBlocked(normalizedPhone);
         User user = userService.findByNumberPhone(normalizedPhone);
+        if (user.isBlocked()){
+            //TODO сделать исключение и добавить в центральный обработчик
+            throw new RuntimeException("Аккаунт заблокирован! Обратитесь в поддержку");
+        }
         validatePasswordAndHandleAttempts(loginRequest.getRawPassword(), user,normalizedPhone);
         loginAttemptService.loginSuccess(normalizedPhone);
         AuthTokens authTokens = authTokenService.generateAuthTokens(user);

@@ -24,4 +24,6 @@ public interface UserService {
 
 
     void updatePassword(String email, String newPassword);
+
+    void saveUser(User user);
 }

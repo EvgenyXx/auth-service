@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -26,5 +27,5 @@ public class Role {
     private LocalDateTime createdAt;
 
     @ManyToMany(mappedBy = "roles")
-    private List<User>users;
+    private Set<User> users;
 }

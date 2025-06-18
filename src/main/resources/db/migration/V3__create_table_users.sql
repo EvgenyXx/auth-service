@@ -4,6 +4,7 @@ number_phone varchar (11) not null unique,
 email varchar(255) not  null  unique ,
 password varchar(100) not  null ,
 firstname varchar(30) not null ,
+blocked BOOLEAN NOT NULL DEFAULT FALSE,
 created_at timestamp with time zone not null default now()
 );
 

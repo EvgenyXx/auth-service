@@ -5,7 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
@@ -41,6 +42,9 @@ public class User {
     @Generated(event = EventType.INSERT)
     private LocalDateTime createdAt;
 
+    @Column(name = "blocked",nullable = false)
+    private boolean blocked = false;
+
 
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -48,5 +52,13 @@ public class User {
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-   private List<Role>roles;
+   private Set<Role> roles;
+
+    public void setEmail(String email) {
+        this.email = email.toLowerCase(Locale.ROOT);
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname.toLowerCase(Locale.ROOT);
+    }
 }

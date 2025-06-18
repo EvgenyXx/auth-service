@@ -14,9 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
+
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -34,8 +36,9 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public User createUser(User user) {
-        user.setRoles(List.of(roleService.getDefaultUserRole()));
+        user.setRoles(Set.of(roleService.getDefaultUserRole()));
         user.setNumberPhone(PhoneNormalizer.normalize(user.getNumberPhone()));
         User saveUser = userRepository.saveAndFlush(user);
         applicationEventPublisher.publishEvent(new UserCreatedEvent(saveUser));
@@ -81,5 +84,10 @@ public class UserServiceImpl implements UserService {
        String passwordUpdate = passwordEncoder.encode(newPassword);
        user.setPassword(passwordUpdate);
        userRepository.save(user);
+    }
+
+    @Override
+    public void saveUser(User user) {
+        userRepository.save(user);
     }
 }

@@ -1,4 +1,4 @@
-package com.example.auth.service.register;
+package com.example.auth.service.redis;
 
 
 import com.example.auth.exception.user.AccountBlockedException;

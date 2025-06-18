@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication",
         description = "Регистрация, вход и управление токенами доступа")
 public class AuthControllerImpl implements AuthController {
@@ -37,7 +36,7 @@ public class AuthControllerImpl implements AuthController {
 
 
     @Override
-    @PostMapping("/register")
+    @PostMapping("/signup")
     @Operation(
             summary = "Метод для регистрации пользователей ",
             description = "Создает нового пользователя с уникальным номером телефона и email",
@@ -47,7 +46,7 @@ public class AuthControllerImpl implements AuthController {
                     @ApiResponse(responseCode = "409", description = "Конфликт введённых данных с уже существующими в базе данных")
             }
             )
-    public ResponseEntity<UserRegisterResponse> registerUser(
+    public ResponseEntity<UserRegisterResponse> signUp(
             @Valid @RequestBody UserRegisterRequest registerRequest,
             HttpServletResponse response) {
         UserRegisterResponse registerResponse = userRegistrationService.registerUser(registerRequest);
@@ -63,7 +62,7 @@ public class AuthControllerImpl implements AuthController {
 
 
     @Override
-    @PostMapping("/refresh")
+    @PostMapping("/token/refresh")
     @Operation(
             summary = "Обновляет пару токенов",
             description = "Генерирует новую пару access/refresh токенов на основе валидного refresh-" +
